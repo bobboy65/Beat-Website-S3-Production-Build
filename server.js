@@ -100,7 +100,7 @@ console.log(keyGen)
 const params = {
     Bucket: "nextdaybeats/uploadInformation",
     
-    Key: randomUUID(), 
+    Key: req.body.artist, 
     Body: JSON.stringify(req.body),
 }
 s3.upload(params, function(err) {
