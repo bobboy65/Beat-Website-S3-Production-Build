@@ -1,7 +1,6 @@
 {
   "name": "s3server",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -22,5 +21,14 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bobboy65/Beat-Website-S3-Production-Build.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bobboy65/Beat-Website-S3-Production-Build/issues"
+  },
+  "homepage": "https://github.com/bobboy65/Beat-Website-S3-Production-Build#readme",
+  "description": ""
 }
