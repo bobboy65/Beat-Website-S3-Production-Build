@@ -7,7 +7,7 @@ const AWS = require('aws-sdk')
 const fs = require("fs");
 const path = require('path');
 const {randomUUID} = require('crypto')
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { error } = require("console");
 
 const ID = process.env.AWS_ACCESS_KEY_ID
@@ -42,22 +42,22 @@ router.post('/login' , async(req,res) => {
      }
      //CONSOLE LOGS USED TO TEST DATA TRANSFERS
         const inbound = req.body;
-        console.log(req.body)
+        console.log(req.body.email)
         s3.getObject(params, (err, data) => {
             //LINE BELOW NEEDED SOME TINKERING TO PROPERLY DE-ENCODE
             let objectData = JSON.parse(data.Body.toString('utf-8'));
             console.log(objectData.emailHash)
-            let validationCheck = bcrypt.compare(inbound.email, objectData.emailHash) 
-            && bcrypt.compare(inbound.password, objectData.passwordHash)
+            console.log(objectData.passwordHash)
+            let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
+            && bcrypt.compareSync(inbound.password, objectData.passwordHash)
             if (err) console.error(err + "getLoginInfo error");
             else if(validationCheck){
                console.log('yeet')
-               //res.send({token: 'welcome'}) 
-               //git push test save
+               res.send({token: 'welcome'}); 
+              
             }
             else {
-                
-                console.log("passwords don't match try again")
+                console.log("Email/password incorrect please try again")
             }
         });
     });

@@ -14,6 +14,12 @@ const multerS3 = require('multer-s3');
 const fs = require("fs");
 const util = require('util')
 
+//these three protect against various types of security attacks
+const helmet = require('helmet');
+const hpp = require('hpp');
+const csurf = require('csurf');
+const limiter = require('express-rate-limit');
+
 const AWS = require('aws-sdk')
 const path = require("path");
 const bodyParser = require('body-parser');
@@ -24,11 +30,17 @@ const userControl = require("./routes/user")
 const {randomUUID} = require('crypto')
 const favorite_number = 18;
 
+
+//app.use(csurf());
 app.use(cors());
 app.use(express.json());
 //app.use(bodyParser.json());
 app.use(express.urlencoded({limit: "30mb",extended:true}));
 //app.use("/upload", express.static(path.join(__dirname,"./uploads")))
+app.use(hpp());
+app.use(helmet());
+//app.use(csurf());
+app.use(limiter());
 
 const ID = process.env.AWS_ACCESS_KEY_ID
 const SECRET = process.env.AWS_SECRET_ACCESS_KEY; 
