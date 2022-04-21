@@ -42,25 +42,27 @@ router.post('/login' , async(req,res) => {
      }
      //CONSOLE LOGS USED TO TEST DATA TRANSFERS
         const inbound = req.body;
-        console.log(req.body.email)
+        console.log(inbound)
         s3.getObject(params, (err, data) => {
             //LINE BELOW NEEDED SOME TINKERING TO PROPERLY DE-ENCODE
             let objectData = JSON.parse(data.Body.toString('utf-8'));
-            console.log(objectData.emailHash)
+            console.log(objectData)
             console.log(objectData.passwordHash)
             let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
             && bcrypt.compareSync(inbound.password, objectData.passwordHash)
             if (err) console.error(err + "getLoginInfo error");
             else if(validationCheck){
-               console.log('yeet')
-               res.send({token: 'welcome'}); 
+               console.log('Logged in')
+
+               res.send({ token: 'welcome ' + objectData.artistName}); 
               
             }
-            else {
+            else if(!validationCheck) {
                 console.log("Email/password incorrect please try again")
+                res.send({token: 'invalid'})
             }
         });
-    });
+});
 
 
 module.exports = router;
