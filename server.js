@@ -28,7 +28,8 @@ const userControl = require("./routes/user")
 
 //will generate a UUIDv4 key for each entry
 const {randomUUID} = require('crypto')
-const favorite_number = 18;
+
+const mongoose = require("mongoose");
 
 
 //app.use(csurf());
@@ -47,6 +48,7 @@ const SECRET = process.env.AWS_SECRET_ACCESS_KEY;
 const LOCATION = process.env.AWS_LOCATION;
 const BUCKET_NAME_3 = process.env.BUCKET_NAME_3;
 const BUCKET_NAME_4 = process.env.BUCKET_NAME_4;
+const URI = process.env.DB_URI;
 
 var s3 = new AWS.S3({
     accessKeyId: ID,
@@ -65,14 +67,9 @@ AWS.config.update({
     accessKeyId: ID,
     secretAccessKey: SECRET
 })
-//Setup for the new bucket
-//Create bucket, used first as a test that we are connected, make bucket
-// s3.createBucket(params, function(err, data) {
-//     if (err) console.log(err, err.stack);
-//     else console.log('Bucket Created Successfully', data.Location);
-// });
 
 ///////////////////////////////////////////////////////////////////////////////////////
+
 //roped off section handlesuploads, getDownload, upload file is for downloads
 var upload = multer({    
     storage: multerS3({
@@ -82,16 +79,28 @@ var upload = multer({
             cb(null, {fieldName: file.fieldname});
         },
         key: function(req, file, cb) {
-            cb(null, randomUUID())
+            //check line below ,uuid =>req.body.SongFile
+            cb(null, req.body.songFile)
         },
     })
 })
+//ABOVE SECTION S3 Storage, BELOW MongodbStorage, Mongo for text S3 for files
+mongoose
+  .connect(URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(
+    console.log("Connected to MongoDB"))
+  .catch((err) => console.log(err));
 
+
+////////////////////////////////////////////////////////////////////////////////////////
 app.post('/upload', upload.array('fileUpload', 2), async (req, res) => {    
 var body = JSON.parse(JSON.stringify(req.body))
 //console.log(req.body);
 //console.log(req.files);
-//console.log(keyGen)
+//console.log(keyGen)     THIS SECTION POPULATES UPLOAD INFORMATION
 const params = {
     Bucket: BUCKET_NAME_4,
     Key: req.body.artist, 
