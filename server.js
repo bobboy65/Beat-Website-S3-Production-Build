@@ -1,10 +1,11 @@
-//Pieces script for setting up an express server
+//script for setting up an express server
 //start with npm init -y
 //npm install express cors dotenv multer path --save
 //npm install nodemon --save-dev
 //can also setup backend and frontend starting at same time
 //add "dev": "nodemon server.js" to scripts in package.json
 //add npm i --save aws-sdk, could do mongoose or other 
+//TO recreate node_modules, all of dependencies here and in routes should do it
 const express = require('express');
 const app = express();
 const dotenv = require('dotenv').config();
@@ -48,7 +49,6 @@ const SECRET = process.env.AWS_SECRET_ACCESS_KEY;
 const LOCATION = process.env.AWS_LOCATION;
 const BUCKET_NAME_3 = process.env.BUCKET_NAME_3;
 const BUCKET_NAME_4 = process.env.BUCKET_NAME_4;
-const URI = process.env.DB_URI;
 
 var s3 = new AWS.S3({
     accessKeyId: ID,
@@ -84,15 +84,7 @@ var upload = multer({
         },
     })
 })
-//ABOVE SECTION S3 Storage, BELOW MongodbStorage, Mongo for text S3 for files
-mongoose
-  .connect(URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(
-    console.log("Connected to MongoDB"))
-  .catch((err) => console.log(err));
+//ABOVE SECTION S3 Storage, in user.js MongodbStorage initialized, Mongo for text S3 for files
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
