@@ -26,48 +26,49 @@ const SECRET = process.env.AWS_SECRET_ACCESS_KEY;
 const LOCATION = process.env.AWS_LOCATION;
 const BUCKET_NAME_2 = process.env.BUCKET_NAME_2;
 const URI = process.env.DB_URI;
+const AUTHSECRET = process.env.AUTHSECRET
 
 var s3 = new AWS.S3();
 
-    mongoose
-  .connect(URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(
-    console.log("Connected to MongoDB"))
-  .catch((err) => console.log(err));
+//     mongoose
+//   .connect(URI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//   })
+//   .then(
+//     console.log("Connected to MongoDB"))
+//   .catch((err) => console.log(err));
 
-  app.use(session({
-    secret: "potatoPancakes" , //decode or encode session
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 2*60*1000
-    }
-}));
-passport.serializeUser(User.serializeUser());       //session encoding
-passport.deserializeUser(User.deserializeUser());   //session decoding
-passport.use(new localStrategy(User.authenticate()));
-app.set("view engine","ejs");
-app.use(bodyParser.urlencoded(
-      { extended:true }
-))
-app.use(passport.initialize());
-app.use(passport.session());
+//   app.use(session({
+//     secret: "potatoPancakes" , //decode or encode session
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//         maxAge: 2*60*1000
+//     }
+// }));
+// passport.serializeUser(User.serializeUser());       //session encoding
+// passport.deserializeUser(User.deserializeUser());   //session decoding
+// passport.use(new localStrategy(User.authenticate()));
+// app.set("view engine","ejs");
+// app.use(bodyParser.urlencoded(
+//       { extended:true }
+// ))
+// app.use(passport.initialize());
+// app.use(passport.session());
 
-//current User
-app.use(function (req, res,next){
-    res.locals.currentUser = req.user;
-    next();
-})
-//MIDDLEWARE
-function isLoggedIn(req,res,next) {
-    if(req.isAuthenticated()){
-        return next();
-    }
-    res.redirect("/login");
-}
+// //current User
+// app.use(function (req, res,next){
+//     res.locals.currentUser = req.user;
+//     next();
+// })
+// //MIDDLEWARE
+// function isLoggedIn(req,res,next) {
+//     if(req.isAuthenticated()){
+//         return next();
+//     }
+//     res.redirect("/login");
+// }
 
 //REGISTER
 router.post('/register' , async(req,res) => {

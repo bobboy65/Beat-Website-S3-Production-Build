@@ -1,36 +1,39 @@
-const mongoose = require('mongoose');
-const passportLocalMongoose = require('passport-local-mongoose');
+// const mongoose = require('mongoose');
+// const passportLocalMongoose = require('passport-local-mongoose');
 
-const UserSchema = new mongoose.Schema({
-    artistName: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    hashWord: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    songCount: {
-        type: Number,
+// const UserSchema = new mongoose.Schema({
+//     artistName: {
+//         type: String,
+//         required: true,
+//         unique: true,
+//     },
+//     email: {
+//         type: String,
+//         required: true,
+//         unique: true,
+//     },
+//     hashWord: {
+//         type: String,
+//         required: true,
+//         unique: true,
+//     },
+//     songCount: {
+//         type: Number,
         
-        unique: true,
-    }
-},
-    {timestamps: true}
-);
+//         unique: true,
+//     }
+// },
+//     {timestamps: true}
+// );
 
-UserSchema.plugin(passportLocalMongoose)
-const User = mongoose.model("User", UserSchema)
-User.createIndexes();
+// UserSchema.plugin(passportLocalMongoose)
+// const User = mongoose.model("User", UserSchema)
+// User.createIndexes();
 
-module.exports = User;
+// module.exports = User;
+
+
+
 
 
 //usage 

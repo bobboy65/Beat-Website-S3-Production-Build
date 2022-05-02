@@ -49,6 +49,7 @@ const SECRET = process.env.AWS_SECRET_ACCESS_KEY;
 const LOCATION = process.env.AWS_LOCATION;
 const BUCKET_NAME_3 = process.env.BUCKET_NAME_3;
 const BUCKET_NAME_4 = process.env.BUCKET_NAME_4;
+const AUTHSECRET = process.env.AUTHSECRET
 
 var s3 = new AWS.S3({
     accessKeyId: ID,
@@ -69,6 +70,27 @@ AWS.config.update({
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////
+//AUTH0 Initializations
+const { auth, requiresAuth } = require('express-openid-connect');
+
+const config = {
+  authRequired: false,
+  auth0Logout: true,
+  secret: AUTHSECRET,
+  baseURL: 'http://localhost:3000',
+  clientID: 'JSql8BBauagad5STUxDxQzSbn40a2QMk',
+  issuerBaseURL: 'https://dev-9l7-li-e.us.auth0.com'
+};
+
+// auth router attaches /login, /logout, and /callback routes to the baseURL
+app.use(auth(config));
+
+// req.isAuthenticated is provided from the auth router
+app.get('/', (req, res) => {
+  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+});
+
+
 
 //roped off section handlesuploads, getDownload, upload file is for downloads
 var upload = multer({    
