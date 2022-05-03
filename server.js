@@ -50,6 +50,8 @@ const LOCATION = process.env.AWS_LOCATION;
 const BUCKET_NAME_3 = process.env.BUCKET_NAME_3;
 const BUCKET_NAME_4 = process.env.BUCKET_NAME_4;
 const AUTHSECRET = process.env.AUTHSECRET
+const CLIENTID = process.env.CLIENTID
+const IBURL = process.env.IBURL
 
 var s3 = new AWS.S3({
     accessKeyId: ID,
@@ -74,21 +76,32 @@ AWS.config.update({
 const { auth, requiresAuth } = require('express-openid-connect');
 
 const config = {
-  authRequired: false,
+  authRequired: true,
   auth0Logout: true,
   secret: AUTHSECRET,
-  baseURL: 'http://localhost:3000',
-  clientID: 'JSql8BBauagad5STUxDxQzSbn40a2QMk',
-  issuerBaseURL: 'https://dev-9l7-li-e.us.auth0.com'
+  baseURL: 'http://localhost:3000/',
+  clientID: CLIENTID,
+  issuerBaseURL: IBURL
 };
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
 app.use(auth(config));
 
+// Middleware to make the `user` object available for all views
+app.use(function (req, res, next) {
+    res.locals.user = req.oidc.user;
+    next();
+  });
+
 // req.isAuthenticated is provided from the auth router
 app.get('/', (req, res) => {
   res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
 });
+
+//add authentication to a route:
+// app.get('/profile', requiresAuth(), (req, res) => {
+//     res.send(JSON.stringify(req.oidc.user))
+// })
 
 
 
@@ -129,7 +142,7 @@ s3.upload(params, function(err) {
 
 
 app.get("/" , (req, res) => {
-    res.send("App is working")
+    res.send("App is working" , req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out')
 });
 
 app.use("/download" , getDownloads)
@@ -139,6 +152,6 @@ app.use("/user" , userControl)
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-    console.log(`Backend started on port ${PORT}`);
+    console.log(`Backend started on port ${PORT} , config base url ${config.baseURL}`);
 });
 
