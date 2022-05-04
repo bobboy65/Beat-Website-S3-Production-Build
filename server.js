@@ -60,11 +60,6 @@ var s3 = new AWS.S3({
 })
 
 //Access S3 with personal keys
-
-//IMPORTANT NOTE :
-//Objects/Files in Amazon S3 are immutable and cannot be appended to or changed. 
-//In order to simulate append, you would need to write the entire file again with the 
-//additional data.
 AWS.config.update({
     region: LOCATION,
     accessKeyId: ID,
@@ -81,7 +76,7 @@ const config = {
   secret: AUTHSECRET,
   baseURL: 'http://localhost:3000/',
   clientID: CLIENTID,
-  issuerBaseURL: IBURL
+  issuerBaseURL: IBURL,
 };
 
 // auth router attaches /login, /logout, and /callback routes to the baseURL
@@ -99,9 +94,9 @@ app.get('/', (req, res) => {
 });
 
 //add authentication to a route:
-// app.get('/profile', requiresAuth(), (req, res) => {
-//     res.send(JSON.stringify(req.oidc.user))
-// })
+app.get('/profile', requiresAuth(), (req, res) => {
+    res.send(JSON.stringify(req.oidc.user))
+})
 
 
 
@@ -139,11 +134,6 @@ s3.upload(params, function(err) {
     console.log('check S3 for what should be a successful upload')
 })
 ///////////////////////////////////////////////////////////////////////////////////////
-
-
-app.get("/" , (req, res) => {
-    res.send("App is working" , req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out')
-});
 
 app.use("/download" , getDownloads)
 app.use("/user" , userControl)
