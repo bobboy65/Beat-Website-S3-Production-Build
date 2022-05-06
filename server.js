@@ -67,9 +67,8 @@ AWS.config.update({
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////
-//AUTH0 Initializations
+//AUTH0 Initializations//
 const { auth, requiresAuth } = require('express-openid-connect');
-
 const config = {
   authRequired: true,
   auth0Logout: true,
@@ -78,7 +77,6 @@ const config = {
   clientID: CLIENTID,
   issuerBaseURL: IBURL,
 };
-
 // auth router attaches /login, /logout, and /callback routes to the baseURL
 app.use(auth(config));
 
@@ -97,7 +95,6 @@ app.get('/', (req, res) => {
 app.get('/profile', requiresAuth(), (req, res) => {
     res.send(JSON.stringify(req.oidc.user))
 })
-
 
 
 //roped off section handlesuploads, getDownload, upload file is for downloads
