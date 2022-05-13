@@ -8,6 +8,7 @@
 //TO recreate node_modules, all of dependencies here and in routes should do it
 const express = require('express');
 const app = express();
+
 const dotenv = require('dotenv').config();
 const cors = require('cors');
 const multer = require('multer')
@@ -69,27 +70,41 @@ AWS.config.update({
 ///////////////////////////////////////////////////////////////////////////////////////
 //AUTH0 Initializations//
 const { auth, requiresAuth } = require('express-openid-connect');
-const config = {
-  authRequired: true,
-  auth0Logout: true,
-  secret: AUTHSECRET,
-  baseURL: 'http://localhost:3000/',
-  clientID: CLIENTID,
-  issuerBaseURL: IBURL,
-};
-// auth router attaches /login, /logout, and /callback routes to the baseURL
-app.use(auth(config));
 
+const config = {
+    authRequired: true,
+    auth0Logout: true,
+    secret: AUTHSECRET,
+    baseURL: 'http://localhost:3000/',
+    clientID: CLIENTID,
+    issuerBaseURL: IBURL,
+}
+
+// auth router attaches /login, /logout, and /callback routes to the baseURL
+app.use(auth(config, parameter = {screen_hint: 'signup'}));
+
+//screen_hint=signup parameter when directiong to /authorize
 // Middleware to make the `user` object available for all views
 app.use(function (req, res, next) {
     res.locals.user = req.oidc.user;
     next();
   });
 
+  
 // req.isAuthenticated is provided from the auth router
-app.get('/', (req, res) => {
-  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
-});
+ app.get('/signin', (req, res) => {
+    var user = JSON.stringify(req.oidc.user.nickname);
+   res.send(req.oidc.isAuthenticated(screen_hint='signup') ? res.redirect(`http://localhost:3000/${user}`) : console.log('Logged out')) ;
+ });
+
+ app.get('/signup', (req, res) => { 
+    var user = JSON.stringify(req.oidc.user.nickname);
+   res.send(req.oidc.login({
+    extraOptions: {
+      screen_hint: 'signup',
+    },
+  }) ? res.redirect(`http://localhost:3000/${user}`) : console.log('Logged out')) ;
+ });
 
 //add authentication to a route:
 app.get('/profile', requiresAuth(), (req, res) => {
