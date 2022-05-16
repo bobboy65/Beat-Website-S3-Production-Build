@@ -28,8 +28,7 @@ const bodyParser = require('body-parser');
 const getDownloads = require("./routes/upload")
 const userControl = require("./routes/user")
 
-//will generate a UUIDv4 key for each entry
-const {randomUUID} = require('crypto')
+const request = require('request-promise-native');
 
 const mongoose = require("mongoose");
 
@@ -50,6 +49,7 @@ const SECRET = process.env.AWS_SECRET_ACCESS_KEY;
 const LOCATION = process.env.AWS_LOCATION;
 const BUCKET_NAME_3 = process.env.BUCKET_NAME_3;
 const BUCKET_NAME_4 = process.env.BUCKET_NAME_4;
+const URI = process.env.DB_URI;
 const AUTHSECRET = process.env.AUTHSECRET
 const CLIENTID = process.env.CLIENTID
 const IBURL = process.env.IBURL
@@ -72,16 +72,19 @@ AWS.config.update({
 const { auth, requiresAuth } = require('express-openid-connect');
 
 const config = {
-    authRequired: true,
+    authRequired: false,
     auth0Logout: true,
     secret: AUTHSECRET,
     baseURL: 'http://localhost:3000/',
     clientID: CLIENTID,
     issuerBaseURL: IBURL,
+    // respone_type: 'code',
+    // audience: 'http://localhost:3000/benis',
+    // scope: 'openid profile email offline_access read:benis',
+    // prompt: 'consent',
 }
-
 // auth router attaches /login, /logout, and /callback routes to the baseURL
-app.use(auth(config, parameter = {screen_hint: 'signup'}));
+app.use(auth(config));
 
 //screen_hint=signup parameter when directiong to /authorize
 // Middleware to make the `user` object available for all views
@@ -93,23 +96,44 @@ app.use(function (req, res, next) {
   
 // req.isAuthenticated is provided from the auth router
  app.get('/signin', (req, res) => {
-    var user = JSON.stringify(req.oidc.user.nickname);
-   res.send(req.oidc.isAuthenticated(screen_hint='signup') ? res.redirect(`http://localhost:3000/${user}`) : console.log('Logged out')) ;
+    // async function test(){
+    // let { token_type, access_token, isExpired, refresh } = req.oidc.accessToken;
+    // if (isExpired()) {
+    //   ({ access_token } = await refresh());
+    // }
+    // const products = await request.get(`http://localhost:3000/benis`, {
+    //   headers: {
+    //     Authorization: `${token_type} ${access_token}`,
+    //   },
+    //   json: true,
+    // });
+    // res.send(`users: ${users.map(({ name }) => name).join(', ')}`);
+    res.oidc.login();
+    // }
+    // test();
  });
 
- app.get('/signup', (req, res) => { 
-    var user = JSON.stringify(req.oidc.user.nickname);
-   res.send(req.oidc.login({
-    extraOptions: {
-      screen_hint: 'signup',
-    },
-  }) ? res.redirect(`http://localhost:3000/${user}`) : console.log('Logged out')) ;
- });
+ app.get('/signup', (req, res) => {
+    res.oidc.login({
+      authorizationParams: {
+        screen_hint: 'signup',
+      },
+    });
+  });
+
+
+
+//  app.get('/signup', (req, res) => { 
+//     //var user = JSON.stringify(req.oidc.user.nickname);
+//     res.send(req.oidc.isAuthenticated() ? res.redirect(`http://localhost:3000/${user}`) : console.log('Logged out')) ;
+
+//  });
+
 
 //add authentication to a route:
-app.get('/profile', requiresAuth(), (req, res) => {
-    res.send(JSON.stringify(req.oidc.user))
-})
+// app.get('/profile', requiresAuth(), (req, res) => {
+//     res.send(JSON.stringify(req.oidc.user))
+// })
 
 
 //roped off section handlesuploads, getDownload, upload file is for downloads
@@ -151,9 +175,10 @@ app.use("/download" , getDownloads)
 app.use("/user" , userControl)
 
 
+
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-    console.log(`Backend started on port ${PORT} , config base url ${config.baseURL}`);
+    console.log(`Backend started on port ${PORT} , config base url: blank for now`);
 });
 

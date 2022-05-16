@@ -26,9 +26,8 @@ const SECRET = process.env.AWS_SECRET_ACCESS_KEY;
 const LOCATION = process.env.AWS_LOCATION;
 const BUCKET_NAME_2 = process.env.BUCKET_NAME_2;
 const URI = process.env.DB_URI;
-const AUTHSECRET = process.env.AUTHSECRET
 
-var s3 = new AWS.S3();
+//var s3 = new AWS.S3();
 
 //     mongoose
 //   .connect(URI, {
@@ -71,62 +70,70 @@ var s3 = new AWS.S3();
 // }
 
 //REGISTER
-router.post('/register' , async(req,res) => {
-    const params = {
-        Bucket: BUCKET_NAME_2,
-        Key: req.body.artistName, 
-        Body: JSON.stringify(req.body),
-    }
 
-    s3.upload(params, function(err) {
-        console.log(JSON.stringify(err) + "" + JSON.stringify(req.body));
-    });
-    //Connect to MongoDB when register POST requested
 
-    console.log(req.body)
-    User.register(new User({
-        artistName: req.body.artistName,
-        email: req.body.emailHash,
-        hashWord: req.body.passwordHash,
-        songCount: 0
-    }), function(err,user) {
-        if(err) {
-            console.log(err);
-            res.render("register");
-        }
-    passport.authenticate("local")(req,res,function() {
-        res.redirect("/login");
-    })    
-    })
-});
+
+//aws working register
+// router.post('/register' , async(req,res) => {
+//     const params = {
+//         Bucket: BUCKET_NAME_2,
+//         Key: req.body.artistName, 
+//         Body: JSON.stringify(req.body),
+//     }
+
+//     s3.upload(params, function(err) {
+//         console.log(JSON.stringify(err) + "" + JSON.stringify(req.body));
+//     });
+//     //Connect to MongoDB when register POST requested
+
+//     console.log(req.body)
+//     User.register(new User({
+//         artistName: req.body.artistName,
+//         email: req.body.emailHash,
+//         hashWord: req.body.passwordHash,
+//         songCount: 0
+//     }), function(err,user) {
+//         if(err) {
+//             console.log(err);
+//             res.render("register");
+//         }
+//     passport.authenticate("local")(req,res,function() {
+//         res.redirect("/login");
+//     })    
+//     })
+// });
 
 //LOGIN 
-router.post('/login' , async(req,res) => {
-     const params = {
-         Bucket: BUCKET_NAME_2,
-         Key: 'johngotti',
-     }
-     //CONSOLE LOGS USED TO TEST DATA TRANSFERS
-        const inbound = req.body;
-        console.log(inbound)
-        s3.getObject(params, (err, data) => {
-            //LINE BELOW NEEDED SOME TINKERING TO PROPERLY DE-ENCODE
-            let objectData = JSON.parse(data.Body.toString('utf-8'));
-            console.log(objectData)
-            console.log(objectData.passwordHash)
-            let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
-            && bcrypt.compareSync(inbound.password, objectData.passwordHash)
-            if (err) console.error(err + "getLoginInfo error");
-            else if(validationCheck){
-               console.log('Logged in')
-               res.send({ token: 'welcome ' + objectData.artistName}); 
-            }
-            else if(!validationCheck) {
-                console.log("Email/password incorrect please try again")
-                res.send({token: 'invalid'})
-            }
-        });
-});
 
+
+
+//AWS working Login 
+// router.post('/login' , async(req,res) => {
+//      const params = {
+//          Bucket: BUCKET_NAME_2,
+//          Key: 'johngotti',
+//      }
+//      //CONSOLE LOGS USED TO TEST DATA TRANSFERS
+//         const inbound = req.body;
+//         console.log(inbound)
+//         s3.getObject(params, (err, data) => {
+//             //LINE BELOW NEEDED SOME TINKERING TO PROPERLY DE-ENCODE
+//             let objectData = JSON.parse(data.Body.toString('utf-8'));
+//             console.log(objectData)
+//             console.log(objectData.passwordHash)
+//             let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
+//             && bcrypt.compareSync(inbound.password, objectData.passwordHash)
+//             if (err) console.error(err + "getLoginInfo error");
+//             else if(validationCheck){
+//                console.log('Logged in')
+//                res.send({ token: 'welcome ' + objectData.artistName}); 
+//             }
+//             else if(!validationCheck) {
+//                 console.log("Email/password incorrect please try again")
+//                 res.send({token: 'invalid'})
+//             }
+//         });
+// });
+//End AWS Working login
 
 module.exports = router;
