@@ -34,7 +34,7 @@ const mongoose = require("mongoose");
 
 
 //app.use(csurf());
-app.use(cors());
+app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 app.use(express.json());
 //app.use(bodyParser.json());
 app.use(express.urlencoded({limit: "30mb",extended:true}));
@@ -70,6 +70,7 @@ AWS.config.update({
 ///////////////////////////////////////////////////////////////////////////////////////
 //AUTH0 Initializations//
 const { auth, requiresAuth } = require('express-openid-connect');
+//const { authJWT } = require('expresss-oauth2-jwt-bearer');
 
 const config = {
     authRequired: false,
@@ -95,7 +96,7 @@ app.use(function (req, res, next) {
 
   
 // req.isAuthenticated is provided from the auth router
- app.get('/signin', (req, res) => {
+ app.get('/signin', (req, res, next) => {
     // async function test(){
     // let { token_type, access_token, isExpired, refresh } = req.oidc.accessToken;
     // if (isExpired()) {
@@ -108,6 +109,7 @@ app.use(function (req, res, next) {
     //   json: true,
     // });
     // res.send(`users: ${users.map(({ name }) => name).join(', ')}`);
+    
     res.oidc.login();
     // }
     // test();
@@ -131,9 +133,9 @@ app.use(function (req, res, next) {
 
 
 //add authentication to a route:
-// app.get('/profile', requiresAuth(), (req, res) => {
-//     res.send(JSON.stringify(req.oidc.user))
-// })
+app.get('/profile', (req, res) => {
+    res.send(req.oidc.isAuthenticated() ? console.log(JSON.stringify(req.oidc.user)) : console.log('logged out'));
+  });
 
 
 //roped off section handlesuploads, getDownload, upload file is for downloads
