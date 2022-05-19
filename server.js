@@ -1,15 +1,11 @@
-//script for setting up an express server
 //start with npm init -y
 //npm install express cors dotenv multer path --save
 //npm install nodemon --save-dev
-//can also setup backend and frontend starting at same time
 //add "dev": "nodemon server.js" to scripts in package.json
-//add npm i --save aws-sdk, could do mongoose or other 
-//TO recreate node_modules, all of dependencies here and in routes should do it
+const dotenv = require('dotenv').config();
 const express = require('express');
 const app = express();
 
-const dotenv = require('dotenv').config();
 const cors = require('cors');
 const multer = require('multer')
 const multerS3 = require('multer-s3');
@@ -27,8 +23,6 @@ const path = require("path");
 const bodyParser = require('body-parser');
 const getDownloads = require("./routes/upload")
 const userControl = require("./routes/user")
-
-const request = require('request-promise-native');
 
 const mongoose = require("mongoose");
 
@@ -53,6 +47,9 @@ const URI = process.env.DB_URI;
 const AUTHSECRET = process.env.AUTHSECRET
 const CLIENTID = process.env.CLIENTID
 const IBURL = process.env.IBURL
+const AUDIENCE = process.env.AUDIENCE
+const CLIENTSECRET = process.env.CLIENTSECRET
+const BASEURL = process.env.BASEURL
 
 var s3 = new AWS.S3({
     accessKeyId: ID,
@@ -69,50 +66,51 @@ AWS.config.update({
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //AUTH0 Initializations//
-const { auth, requiresAuth } = require('express-openid-connect');
-//const { authJWT } = require('expresss-oauth2-jwt-bearer');
+const { auth , requiresAuth } = require('express-openid-connect');
+//const {auth , requiredScopes } = require('express-oauth2-jwt-bearer');
+var jsonwebtoken = require('jsonwebtoken');
+var jwks = require('jwks-rsa');
+var {expressjwt: jwt} = require('express-jwt')
+var unless = require('express-unless')
+const request = require('request-promise-native');
+const { Server } = require('http');
 
-const config = {
-    authRequired: false,
-    auth0Logout: true,
-    secret: AUTHSECRET,
-    baseURL: 'http://localhost:3000/',
-    clientID: CLIENTID,
-    issuerBaseURL: IBURL,
-    // respone_type: 'code',
-    // audience: 'http://localhost:3000/benis',
-    // scope: 'openid profile email offline_access read:benis',
-    // prompt: 'consent',
+
+
+ const config = {
+     authRequired: false,
+     auth0Logout: true,
+     secret: AUTHSECRET,
+     baseURL: BASEURL,
+     clientID: CLIENTID,
+     issuerBaseURL: IBURL,
+     clientSecret: CLIENTSECRET,
+     authorizationParams: {
+        response_type: 'code',
+        audience: AUDIENCE,
+        //scope: 'openid profile email',
+      },
+    // audience: AUDIENCE,
+    // issuer: IBURL,
+     //algorithms: ['RS256'],
+    // jwksUri: 'https://dev-9l7-li-e.us.auth0.com/.well-known/jwks.json',
+    // response_type: 'code',
+    // scope: 'openid profile email read:user'
 }
-// auth router attaches /login, /logout, and /callback routes to the baseURL
+
 app.use(auth(config));
 
-//screen_hint=signup parameter when directiong to /authorize
-// Middleware to make the `user` object available for all views
 app.use(function (req, res, next) {
     res.locals.user = req.oidc.user;
+    console.log(req.oidc.user)
     next();
   });
 
-  
 // req.isAuthenticated is provided from the auth router
- app.get('/signin', (req, res, next) => {
-    // async function test(){
-    // let { token_type, access_token, isExpired, refresh } = req.oidc.accessToken;
-    // if (isExpired()) {
-    //   ({ access_token } = await refresh());
-    // }
-    // const products = await request.get(`http://localhost:3000/benis`, {
-    //   headers: {
-    //     Authorization: `${token_type} ${access_token}`,
-    //   },
-    //   json: true,
-    // });
-    // res.send(`users: ${users.map(({ name }) => name).join(', ')}`);
+ app.get('/signin', async (req, res, next) => {
+
+    res.send(`hello ${JSON.stringify(req.oidc.user)}`)
     
-    res.oidc.login();
-    // }
-    // test();
  });
 
  app.get('/signup', (req, res) => {
@@ -123,18 +121,25 @@ app.use(function (req, res, next) {
     });
   });
 
-
-
-//  app.get('/signup', (req, res) => { 
-//     //var user = JSON.stringify(req.oidc.user.nickname);
-//     res.send(req.oidc.isAuthenticated() ? res.redirect(`http://localhost:3000/${user}`) : console.log('Logged out')) ;
-
-//  });
-
-
 //add authentication to a route:
-app.get('/profile', (req, res) => {
-    res.send(req.oidc.isAuthenticated() ? console.log(JSON.stringify(req.oidc.user)) : console.log('logged out'));
+app.get('/profile', requiresAuth(), (req,next, res) => {
+     res.send( console.log(JSON.stringify(req.oidc.user)));
+  });
+
+
+ // app.get('/', (req, res) => {
+    //res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out')
+  //});
+
+  app.get('/', async (req, res) => {
+    let { token_type , access_token } = req.oidc.accessToken;
+
+    const user = await request.get(AUDIENCE, {
+      headers: {
+        Authorization: `${token_type} ${access_token}`,
+      },
+    });
+    res.send(`user: ${user}`);
   });
 
 
