@@ -84,12 +84,13 @@ const { Server } = require('http');
      baseURL: BASEURL,
      clientID: CLIENTID,
      issuerBaseURL: IBURL,
-     clientSecret: CLIENTSECRET,
-     authorizationParams: {
-        response_type: 'code',
-        audience: AUDIENCE,
-        //scope: 'openid profile email',
-      },
+      clientSecret: CLIENTSECRET,
+      authorizationParams: {
+         response_type: 'code',
+         audience: AUDIENCE,
+        //scope: 'openid profile email read:admin',
+       },
+      
     // audience: AUDIENCE,
     // issuer: IBURL,
      //algorithms: ['RS256'],
@@ -99,49 +100,81 @@ const { Server } = require('http');
 }
 
 app.use(auth(config));
-
-app.use(function (req, res, next) {
-    res.locals.user = req.oidc.user;
-    console.log(req.oidc.user)
-    next();
+app.get('/', (req, res) => {
+    //res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+    let { token_type, access_token } = req.oidc.accessToken;
+    
+    // const products = await request.get('https://api.example.com/products', {
+    //   headers: {
+    //     Authorization: `${token_type} ${access_token}`,
+    //   },
+    // });
+    // res.send(`Products: ${products}`);
   });
 
-// req.isAuthenticated is provided from the auth router
- app.get('/signin', async (req, res, next) => {
 
-    res.send(`hello ${JSON.stringify(req.oidc.user)}`)
-    
- });
+  app.get('/profile', requiresAuth(), (req, res) => {
+    res.send(JSON.stringify(req.oidc.user));
+  });
 
- app.get('/signup', (req, res) => {
+   app.get('/signup', (req, res) => {
     res.oidc.login({
       authorizationParams: {
         screen_hint: 'signup',
       },
     });
   });
+  
+   app.get('/signin', async (req, res, next) => {
 
-//add authentication to a route:
-app.get('/profile', requiresAuth(), (req,next, res) => {
-     res.send( console.log(JSON.stringify(req.oidc.user)));
-  });
+    res.send(`hello ${(JSON.stringify(req.oidc.user))}`)
+    
+ });
+
+//////////////////////////////////////////////////////////////////////// QUARENTINE
+// // app.use(function (req, res, next) {
+// //     res.locals.user = req.oidc.user;
+// //     console.log(req.oidc.user)
+// //     next();
+// //   });
+
+// // req.isAuthenticated is provided from the auth router
+//  app.get('/signin', async (req, res, next) => {
+
+//     res.send(`hello ${(req.oidc.user)}`)
+    
+//  });
+
+//  app.get('/signup', (req, res) => {
+//     res.oidc.login({
+//       authorizationParams: {
+//         screen_hint: 'signup',
+//       },
+//     });
+//   });
+
+// //add authentication to a route:
+// app.get('/profile', requiresAuth(), (req,next, res) => {
+//      //res.send( console.log(JSON.stringify(req.oidc.user)));
+//      res.send(`hello ${req.oidc.user.sub}`);
+//   });
 
 
- // app.get('/', (req, res) => {
-    //res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out')
-  //});
+//  // app.get('/', (req, res) => {
+//     //res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out')
+//   //});
 
-  app.get('/', async (req, res) => {
-    let { token_type , access_token } = req.oidc.accessToken;
+//   app.post('/', async (req, res) => {
+//     let { token_type , access_token } = req.oidc.accessToken;
 
-    const user = await request.get(AUDIENCE, {
-      headers: {
-        Authorization: `${token_type} ${access_token}`,
-      },
-    });
-    res.send(`user: ${user}`);
-  });
-
+//     const user = await request.get(AUDIENCE, {
+//       headers: {
+//         Authorization: `${token_type} ${access_token}`,
+//       },
+//     });
+//     res.send(`user: ${user}`);
+//   });
+///////////////////////////////////////////////////////////////////////////
 
 //roped off section handlesuploads, getDownload, upload file is for downloads
 var upload = multer({    
