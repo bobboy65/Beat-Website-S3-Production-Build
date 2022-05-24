@@ -23,6 +23,9 @@ const path = require("path");
 const bodyParser = require('body-parser');
 const getDownloads = require("./routes/upload")
 const userControl = require("./routes/user")
+const authMongoDb = require("./models/authMongoDb")
+
+const bcrypt = require("bcrypt")
 
 const mongoose = require("mongoose");
 
@@ -51,6 +54,13 @@ const AUDIENCE = process.env.AUDIENCE
 const CLIENTSECRET = process.env.CLIENTSECRET
 const BASEURL = process.env.BASEURL
 
+const hashSlinger = (hash) => {
+    const saltRounds = 10;
+    const salt = bcrypt.genSaltSync(saltRounds);
+    const hashResult = bcrypt.hashSync(hash, salt);       
+    return hashResult;
+}
+
 var s3 = new AWS.S3({
     accessKeyId: ID,
     secretAccessKey: SECRET,
@@ -63,6 +73,8 @@ AWS.config.update({
     accessKeyId: ID,
     secretAccessKey: SECRET
 })
+//MONGODB Connection URI
+//mongodb+srv://<username>:<password>@cluster0.bdypv.mongodb.net/?retryWrites=true&w=majority
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //AUTH0 Initializations//
@@ -126,8 +138,16 @@ app.get('/', (req, res) => {
     });
   });
   
-   app.get('/signin', async (req, res, next) => {
-    res.send(`hello ${(JSON.stringify(req.oidc.user))}`)
+   app.get('/signin', requiresAuth(), async (req, res, next) => {
+    //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a bcrypt return for a bcrypt compare,
+    //allows our bcrypt to be public if we want and compare to db ID   
+    const JWT = hashSlinger(req.oidc.user.sub)
+    
+        //let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
+        res.redirect("http://localhost:3000/about")
+        next();
+        res.send(`hello ${(JWT)}`)
+    
  });
 
 //////////////////////////////////////////////////////////////////////// QUARENTINE
@@ -212,6 +232,7 @@ s3.upload(params, function(err) {
 
 app.use("/download" , getDownloads)
 app.use("/user" , userControl)
+//app.use("/dB" , authMongoDb)
 
 
 

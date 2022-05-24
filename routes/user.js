@@ -6,18 +6,14 @@ const dotenv = require('dotenv').config();
 const AWS = require('aws-sdk')
 const fs = require("fs");
 const path = require('path');
-const {randomUUID} = require('crypto')
-const bcrypt = require('bcryptjs');
-const { error } = require("console");
 
+const bcrypt = require('bcryptjs');
 //MongoDB Initializations
 const mongoose = require("mongoose");
-const app = express();
 const passport = require('passport');
-const localStrategy = require('passport-local');
-const passportLocalMongoose = require('passport-local-mongoose');
+
 session = require('express-session');
-User = require("../models/userModel");
+User = require("../models/authMongoDb");
 ejs = require('ejs');
 const bodyParser = require('body-parser');
 
