@@ -75,8 +75,6 @@ var unless = require('express-unless')
 const request = require('request-promise-native');
 const { Server } = require('http');
 
-
-
  const config = {
      authRequired: false,
      auth0Logout: true,
@@ -85,11 +83,11 @@ const { Server } = require('http');
      clientID: CLIENTID,
      issuerBaseURL: IBURL,
       clientSecret: CLIENTSECRET,
-      authorizationParams: {
-         response_type: 'code',
-         audience: AUDIENCE,
-        //scope: 'openid profile email read:admin',
-       },
+    //   authorizationParams: {
+    //      response_type: 'code',
+    //      audience: AUDIENCE,
+    //     //scope: 'openid profile email read:admin',
+    //    },
       
     // audience: AUDIENCE,
     // issuer: IBURL,
@@ -98,6 +96,8 @@ const { Server } = require('http');
     // response_type: 'code',
     // scope: 'openid profile email read:user'
 }
+
+
 
 app.use(auth(config));
 app.get('/', (req, res) => {
@@ -118,6 +118,7 @@ app.get('/', (req, res) => {
   });
 
    app.get('/signup', (req, res) => {
+    console.log("signup-redirect-called")
     res.oidc.login({
       authorizationParams: {
         screen_hint: 'signup',
@@ -126,9 +127,7 @@ app.get('/', (req, res) => {
   });
   
    app.get('/signin', async (req, res, next) => {
-
     res.send(`hello ${(JSON.stringify(req.oidc.user))}`)
-    
  });
 
 //////////////////////////////////////////////////////////////////////// QUARENTINE
