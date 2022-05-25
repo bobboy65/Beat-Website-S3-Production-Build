@@ -31,7 +31,10 @@ const mongoose = require("mongoose");
 
 
 //app.use(csurf());
+
+
 app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
+
 app.use(express.json());
 //app.use(bodyParser.json());
 app.use(express.urlencoded({limit: "30mb",extended:true}));
@@ -126,7 +129,10 @@ app.get('/', (req, res) => {
 
 
   app.get('/profile', requiresAuth(), (req, res) => {
-    res.send(JSON.stringify(req.oidc.user));
+    
+    res.send(req.oidc.user);
+    //var jsondata = ['{"Site":"Example", "Code":"Node"}']
+
   });
 
    app.get('/signup', (req, res) => {
@@ -135,18 +141,20 @@ app.get('/', (req, res) => {
       authorizationParams: {
         screen_hint: 'signup',
       },
+      //moneymaker line:
+      returnTo: `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
+      
     });
+    //res.json(`${(JSON.stringify(req.oidc.user))}`)
   });
   
    app.get('/signin', requiresAuth(), async (req, res, next) => {
     //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a bcrypt return for a bcrypt compare,
     //allows our bcrypt to be public if we want and compare to db ID   
     const JWT = hashSlinger(req.oidc.user.sub)
-    
         //let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
-        res.redirect("http://localhost:3000/about")
-        next();
-        res.send(`hello ${(JWT)}`)
+        //res.redirect("http://localhost:3000/about")
+        res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
     
  });
 
