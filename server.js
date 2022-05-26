@@ -56,6 +56,7 @@ const IBURL = process.env.IBURL
 const AUDIENCE = process.env.AUDIENCE
 const CLIENTSECRET = process.env.CLIENTSECRET
 const BASEURL = process.env.BASEURL
+AUTH0_SCOPE = process.env.AUTH0_SCOPE
 
 const hashSlinger = (hash) => {
     const saltRounds = 10;
@@ -97,7 +98,8 @@ const { Server } = require('http');
      baseURL: BASEURL,
      clientID: CLIENTID,
      issuerBaseURL: IBURL,
-      clientSecret: CLIENTSECRET,
+     clientSecret: CLIENTSECRET,
+     
     //   authorizationParams: {
     //      response_type: 'code',
     //      audience: AUDIENCE,
@@ -127,15 +129,8 @@ app.get('/', (req, res) => {
     // res.send(`Products: ${products}`);
   });
 
+   app.get('/signup', requiresAuth(), (req, res) => {
 
-  app.get('/profile', requiresAuth(), (req, res) => {
-    
-    res.send(req.oidc.user);
-    //var jsondata = ['{"Site":"Example", "Code":"Node"}']
-
-  });
-
-   app.get('/signup', (req, res) => {
     console.log("signup-redirect-called")
     res.oidc.login({
       authorizationParams: {
@@ -145,10 +140,11 @@ app.get('/', (req, res) => {
       returnTo: `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
       
     });
-    //res.json(`${(JSON.stringify(req.oidc.user))}`)
+    //2nd moneymakerline
+    //res.json(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "benis");
   });
   
-   app.get('/signin', requiresAuth(), async (req, res, next) => {
+   app.get('/signin', async (req, res, next) => {
     //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a bcrypt return for a bcrypt compare,
     //allows our bcrypt to be public if we want and compare to db ID   
     const JWT = hashSlinger(req.oidc.user.sub)
@@ -157,6 +153,17 @@ app.get('/', (req, res) => {
         res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
     
  });
+
+//  app.get('/profile', requiresAuth(), (req, res) => {
+    
+//     //res.send(req.oidc.user);
+
+//     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
+//     //res.send(`hi: ${req.oidc.user}`);
+    
+//     //var jsondata = ['{"Site":"Example", "Code":"Node"}']
+
+//   });
 
 //////////////////////////////////////////////////////////////////////// QUARENTINE
 // // app.use(function (req, res, next) {
