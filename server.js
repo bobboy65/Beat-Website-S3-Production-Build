@@ -118,52 +118,84 @@ const { Server } = require('http');
 
 app.use(auth(config));
 app.get('/', (req, res) => {
-    //res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
-    let { token_type, access_token } = req.oidc.accessToken;
-    
-    // const products = await request.get('https://api.example.com/products', {
-    //   headers: {
-    //     Authorization: `${token_type} ${access_token}`,
-    //   },
-    // });
+
     // res.send(`Products: ${products}`);
   });
+// config = {}
+//     returnTo: `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
+//       //moneymaker line:
+//       //returnTo: `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
+//     };
+    //app.use(auth(config));
+   app.get('/signup', (req, res) => {
 
-   app.get('/signup', requiresAuth(), (req, res) => {
-
-    console.log("signup-redirect-called")
     res.oidc.login({
       authorizationParams: {
         screen_hint: 'signup',
       },
-      //moneymaker line:
-      returnTo: `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
-      
+      //moneymaker line broken :
+      //returnTo: `https://nextdaybeats.com/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
     });
-    //2nd moneymakerline
-    //res.json(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "benis");
+    //returnTo: `https://nextdaybeats.com/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
+
+    //console.log(JSON.stringify(req.oidc.user.sub));
+    //2nd moneymakerline broken 
+    //res.redirect(req.oidc.isAuthenticated() ? `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}` : "benis");
   });
+
   
-   app.get('/signin', async (req, res, next) => {
-    //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a bcrypt return for a bcrypt compare,
-    //allows our bcrypt to be public if we want and compare to db ID   
-    const JWT = hashSlinger(req.oidc.user.sub)
+//   function getUser() {
+    
+//     let JWT = hashSlinger(req.oidc.user.sub);
+//     console.log(JWT)
+//     res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
+//   }
+   app.get('/signin', requiresAuth(), async (req, next, res) => {
+    //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a 
+    //bcrypt return for a bcrypt compare,
+    //allows our bcrypt to be public if we want and compare to db ID 
+
+        res.locals.isAuthenticated = req.oidc.isAuthenticated();
+        next();
+        const JWT = hashSlinger(req.oidc.user.sub);
+    
+        //res.redirect(`nextdaybeats.com/${JWT}`);
+
+    // signinResponse();
+    
+    // res.oidc.login();
+    // let response = getUser;
+    // try{
+    // response;
+    // } 
+    // catch (err) {
+    // console.log("failed to get user")
+    // }
+    //await res.oidc.login();
+
+    //const JWT = hashSlinger(req.oidc.user.sub)
         //let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
         //res.redirect("http://localhost:3000/about")
-        res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
+    //getUser()
+     
+            //let JWT = hashSlinger(req.oidc.user.sub);
+            //res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`) 
     
- });
+});
+ 
 
-//  app.get('/profile', requiresAuth(), (req, res) => {
-    
-//     //res.send(req.oidc.user);
+  app.get('/profile', requiresAuth(), (req, res) => {
+    let JWT = hashSlinger(req.oidc.user.sub);
+    console.log(JWT)
+     res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
+     //res.send(req.oidc.user);
 
 //     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
 //     //res.send(`hi: ${req.oidc.user}`);
     
 //     //var jsondata = ['{"Site":"Example", "Code":"Node"}']
 
-//   });
+   });
 
 //////////////////////////////////////////////////////////////////////// QUARENTINE
 // // app.use(function (req, res, next) {
