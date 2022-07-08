@@ -2,9 +2,11 @@
 //npm install express cors dotenv multer path --save
 //npm install nodemon --save-dev
 //add "dev": "nodemon server.js" to scripts in package.json
+
 const dotenv = require('dotenv').config();
 const express = require('express');
 const app = express();
+
 
 const cors = require('cors');
 const multer = require('multer')
@@ -33,7 +35,7 @@ const mongoose = require("mongoose");
 //app.use(csurf());
 
 
-app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
+app.use(cors({origin: 'http://localhost:3000'}));
 
 app.use(express.json());
 //app.use(bodyParser.json());
@@ -83,14 +85,17 @@ AWS.config.update({
 ///////////////////////////////////////////////////////////////////////////////////////
 //AUTH0 Initializations//
 const { auth , requiresAuth } = require('express-openid-connect');
-//const {auth , requiredScopes } = require('express-oauth2-jwt-bearer');
-var jsonwebtoken = require('jsonwebtoken');
+
+
+
 var jwks = require('jwks-rsa');
-var {expressjwt: jwt} = require('express-jwt')
 var unless = require('express-unless')
 const request = require('request-promise-native');
 const { Server } = require('http');
 
+
+//////////////////////////////////////////////////////////////
+//for openid connect use this section
  const config = {
      authRequired: false,
      auth0Logout: true,
@@ -100,23 +105,24 @@ const { Server } = require('http');
      issuerBaseURL: IBURL,
      clientSecret: CLIENTSECRET,
      
-    //   authorizationParams: {
-    //      response_type: 'code',
-    //      audience: AUDIENCE,
-    //     //scope: 'openid profile email read:admin',
-    //    },
+      authorizationParams: {
+         response_type: 'code',
+         audience: AUDIENCE,
+        //scope: 'openid profile email read:admin',
+       },
       
     // audience: AUDIENCE,
     // issuer: IBURL,
-     //algorithms: ['RS256'],
+    //  algorithms: ['RS256'],
     // jwksUri: 'https://dev-9l7-li-e.us.auth0.com/.well-known/jwks.json',
     // response_type: 'code',
     // scope: 'openid profile email read:user'
 }
 
-
-
 app.use(auth(config));
+
+//////////////////////////////////////////////////////////////
+
 app.get('/', (req, res) => {
 
     // res.send(`Products: ${products}`);
@@ -133,14 +139,11 @@ app.get('/', (req, res) => {
       authorizationParams: {
         screen_hint: 'signup',
       },
-      //moneymaker line broken :
+      returnTo: `http://localhost:3000/profile`
       //returnTo: `https://nextdaybeats.com/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
     });
     //returnTo: `https://nextdaybeats.com/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
 
-    //console.log(JSON.stringify(req.oidc.user.sub));
-    //2nd moneymakerline broken 
-    //res.redirect(req.oidc.isAuthenticated() ? `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}` : "benis");
   });
 
   
@@ -155,15 +158,13 @@ app.get('/', (req, res) => {
     //bcrypt return for a bcrypt compare,
     //allows our bcrypt to be public if we want and compare to db ID 
 
-        res.locals.isAuthenticated = req.oidc.isAuthenticated();
-        next();
-        const JWT = hashSlinger(req.oidc.user.sub);
+        //res.locals.isAuthenticated = req.oidc.isAuthenticated();
     
-        //res.redirect(`nextdaybeats.com/${JWT}`);
+        //res.send(`nextdaybeats.com/${JWT}`, {user: req.oidc.user});
 
     // signinResponse();
     
-    // res.oidc.login();
+     //res.oidc.login();
     // let response = getUser;
     // try{
     // response;
@@ -183,19 +184,19 @@ app.get('/', (req, res) => {
     
 });
  
+// requires auth example
+//   app.get('/profile', requiresAuth(), (req, res) => {
+//     let JWT = hashSlinger(req.oidc.user.sub);
+//     console.log(JWT)
+//      res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
+//      //res.send(req.oidc.user);
 
-  app.get('/profile', requiresAuth(), (req, res) => {
-    let JWT = hashSlinger(req.oidc.user.sub);
-    console.log(JWT)
-     res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
-     //res.send(req.oidc.user);
-
-//     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
-//     //res.send(`hi: ${req.oidc.user}`);
+// //     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
+// //     //res.send(`hi: ${req.oidc.user}`);
     
-//     //var jsondata = ['{"Site":"Example", "Code":"Node"}']
+// //     //var jsondata = ['{"Site":"Example", "Code":"Node"}']
 
-   });
+//    });
 
 //////////////////////////////////////////////////////////////////////// QUARENTINE
 // // app.use(function (req, res, next) {
