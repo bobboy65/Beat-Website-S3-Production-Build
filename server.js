@@ -123,18 +123,24 @@ app.use(auth(config));
 
 //////////////////////////////////////////////////////////////
 
-app.get('/', (req, res) => {
-
-    // res.send(`Products: ${products}`);
+app.get('/test', async (req, res) => {
+    let { token_type, access_token } = req.oidc.accessToken;
+    const products = await request.get('http://localhost:8080/signin', {
+      headers: {
+        Authorization: `${token_type} ${access_token}`,
+      },
+    });
+    res.send(`Products: ${products}`);
   });
-// config = {}
-//     returnTo: `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
-//       //moneymaker line:
-//       //returnTo: `http://localhost:3000/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
-//     };
-    //app.use(auth(config));
-   app.get('/signup', (req, res) => {
 
+app.get('/logout', (req, res) => {
+console.log("tit dirt");
+res.oidc.logout();
+
+    });
+
+   app.get('/signup', (req, res) => {
+    console.log("signup initialized")
     res.oidc.login({
       authorizationParams: {
         screen_hint: 'signup',
@@ -142,6 +148,7 @@ app.get('/', (req, res) => {
       returnTo: `http://localhost:3000/profile`
       //returnTo: `https://nextdaybeats.com/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
     });
+
     //returnTo: `https://nextdaybeats.com/${(hashSlinger(JSON.stringify(req.oidc.user.sub)))}`
 
   });
@@ -153,11 +160,11 @@ app.get('/', (req, res) => {
 //     console.log(JWT)
 //     res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
 //   }
-   app.get('/signin', requiresAuth(), async (req, next, res) => {
+   app.get('/signin', requiresAuth(),  (req, next, res) => {
     //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a 
     //bcrypt return for a bcrypt compare,
     //allows our bcrypt to be public if we want and compare to db ID 
-
+    console.log("sign in initialized")
         //res.locals.isAuthenticated = req.oidc.isAuthenticated();
     
         //res.send(`nextdaybeats.com/${JWT}`, {user: req.oidc.user});
@@ -175,12 +182,11 @@ app.get('/', (req, res) => {
     //await res.oidc.login();
 
     //const JWT = hashSlinger(req.oidc.user.sub)
+    //const userInformation = req.oidc.user.sub;
         //let validationCheck = bcrypt.compareSync(inbound.email, objectData.emailHash) 
         //res.redirect("http://localhost:3000/about")
     //getUser()
-     
-            //let JWT = hashSlinger(req.oidc.user.sub);
-            //res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`) 
+    //console.log(`hello ${userInformation}`);
     
 });
  
