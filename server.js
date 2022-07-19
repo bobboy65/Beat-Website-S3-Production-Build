@@ -67,6 +67,22 @@ const hashSlinger = (hash) => {
     return hashResult;
 }
 
+const exampleJWT = '$2b$10$Gkovk8fy0K0szuZy9p.M4.SLfGNhjemABXV/2bsKzDi7ONVeyMCwu'
+const jwtCompare = (jwt) => {
+    bcrypt.compare(jwt, exampleJWT, function(err, isValid) {
+        if (isValid) {
+            console.log("unique JWT match");
+        }
+        if (err) {
+            console.log("error tokens don't match");
+        }
+        else {
+        console.log(`${(jwt)}`);
+        console.log(exampleJWT)
+        }
+    })
+}
+
 var s3 = new AWS.S3({
     accessKeyId: ID,
     secretAccessKey: SECRET,
@@ -105,11 +121,11 @@ const { Server } = require('http');
      issuerBaseURL: IBURL,
      clientSecret: CLIENTSECRET,
      
-      authorizationParams: {
-         response_type: 'code',
-         audience: AUDIENCE,
-        //scope: 'openid profile email read:admin',
-       },
+    //   authorizationParams: {
+    //      response_type: 'code',
+    //      audience: AUDIENCE,
+    //     //scope: 'openid profile email read:admin',
+    //    },
       
     // audience: AUDIENCE,
     // issuer: IBURL,
@@ -133,11 +149,12 @@ app.get('/test', async (req, res) => {
     res.send(`Products: ${products}`);
   });
 
-app.get('/logout', (req, res) => {
-console.log("tit dirt");
-res.oidc.logout();
-
-    });
+    app.get('/logout',requiresAuth(), (req, res) => {
+        console.log("logout initialized")
+        req.oidc.logout({
+            returnTo: `http://localhost:3000/logout`
+        });
+      });
 
    app.get('/signup', (req, res) => {
     console.log("signup initialized")
@@ -160,10 +177,12 @@ res.oidc.logout();
 //     console.log(JWT)
 //     res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
 //   }
-   app.get('/signin', requiresAuth(),  (req, next, res) => {
+   app.get('/signin', requiresAuth(),  (req, res, next) => {
     //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a 
     //bcrypt return for a bcrypt compare,
     //allows our bcrypt to be public if we want and compare to db ID 
+    res.redirect(`http://localhost:3000/${((req.oidc.user.nickname))}`);
+
     console.log("sign in initialized")
         //res.locals.isAuthenticated = req.oidc.isAuthenticated();
     
@@ -191,18 +210,19 @@ res.oidc.logout();
 });
  
 // requires auth example
-//   app.get('/profile', requiresAuth(), (req, res) => {
-//     let JWT = hashSlinger(req.oidc.user.sub);
-//     console.log(JWT)
-//      res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
-//      //res.send(req.oidc.user);
+  app.get('/profile', requiresAuth(), (req, res) => {
+    let JWT = req.oidc.user.sub;
+    console.log(JWT)
+    jwtCompare(JWT)
+    res.redirect(`http://localhost:3000/${((req.oidc.user.nickname))}`)
+     //res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
+     //res.send(req.oidc.user);
 
-// //     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
-// //     //res.send(`hi: ${req.oidc.user}`);
-    
-// //     //var jsondata = ['{"Site":"Example", "Code":"Node"}']
+//     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
+//     //res.send(`hi: ${req.oidc.user}`);
 
-//    });
+
+   });
 
 //////////////////////////////////////////////////////////////////////// QUARENTINE
 // // app.use(function (req, res, next) {
