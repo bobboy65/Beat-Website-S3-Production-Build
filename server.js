@@ -212,18 +212,39 @@ app.get('/test', async (req, res) => {
 // requires auth example
   app.get('/profile', requiresAuth(), (req, res) => {
     let JWT = req.oidc.user.sub;
+    let profileInformation = req.oidc.user;
     console.log(JWT)
     jwtCompare(JWT)
-    res.redirect(`http://localhost:3000/${((req.oidc.user.nickname))}`)
+    //res.redirect(`http://localhost:3000/${((req.oidc.user.nickname))}`)
+    if (req.oidc.user.sub != ""){
+        app.locals.profileInformation = req.oidc.user;
+        global.globalUserInformation = req.oidc.user;
+        }
+    res.redirect(`http://localhost:3000/profile`)
+
+
+
      //res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
      //res.send(req.oidc.user);
 
 //     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
 //     //res.send(`hi: ${req.oidc.user}`);
-
-
    });
 
+   app.get('/profileFetch', (req, res, next) => {
+    // exports.route = function(req, res){
+    //     var profileInformation = req.app.locals.profileInformation;
+    //     console.log(profileInformation);
+    //     console.log("benis");
+    // }
+    if(globalUserInformation != undefined){
+    res.send(globalUserInformation);
+    }
+    else {
+        console.log("userInformation not loaded properly")
+    }
+    
+   });
 //////////////////////////////////////////////////////////////////////// QUARENTINE
 // // app.use(function (req, res, next) {
 // //     res.locals.user = req.oidc.user;
