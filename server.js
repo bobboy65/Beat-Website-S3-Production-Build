@@ -108,6 +108,7 @@ var jwks = require('jwks-rsa');
 var unless = require('express-unless')
 const request = require('request-promise-native');
 const { Server } = require('http');
+const res = require('express/lib/response');
 
 
 //////////////////////////////////////////////////////////////
@@ -177,12 +178,13 @@ app.get('/test', async (req, res) => {
 //     console.log(JWT)
 //     res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
 //   }
-   app.get('/signin', requiresAuth(),  (req, res, next) => {
+   app.get('/signin',  (req, res, next) => {
     //convert returned AUTH0 sub:"auth0<abbreviated-JWT>" into a 
     //bcrypt return for a bcrypt compare,
     //allows our bcrypt to be public if we want and compare to db ID 
-    res.redirect(`http://localhost:3000/${((req.oidc.user.nickname))}`);
-
+    //res.oidc.login({returnTo: `http://localhost:3000/${(JSON.stringify(req.oidc.user.nickname))}` })
+    //res.redirect(`http://localhost:3000/${((req.oidc.user.nickname))}`);
+    res.oidc.login({returnTo: `http://localhost:8080/profileFetch` })
     console.log("sign in initialized")
         //res.locals.isAuthenticated = req.oidc.isAuthenticated();
     
@@ -210,7 +212,8 @@ app.get('/test', async (req, res) => {
 });
  
 // requires auth example
-  app.get('/profile', requiresAuth(), (req, res) => {
+ 
+app.get('/profile', requiresAuth(), (req, res, next ) => {
     let JWT = req.oidc.user.sub;
     let profileInformation = req.oidc.user;
     console.log(JWT)
@@ -220,12 +223,13 @@ app.get('/test', async (req, res) => {
         app.locals.profileInformation = req.oidc.user;
         global.globalUserInformation = req.oidc.user;
         }
-    res.redirect(`http://localhost:3000/profile`)
+    //next();
+    //res.redirect(`http://localhost:3000/profile`)
 
 
 
      //res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
-     //res.send(req.oidc.user);
+     res.send(req.oidc.user);
 
 //     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
 //     //res.send(`hi: ${req.oidc.user}`);
@@ -237,13 +241,17 @@ app.get('/test', async (req, res) => {
     //     console.log(profileInformation);
     //     console.log("benis");
     // }
-    if(globalUserInformation != undefined){
-    res.send(globalUserInformation);
-    }
-    else {
-        console.log("userInformation not loaded properly")
-    }
-    
+    res.redirect(`http://localhost:3000/profile/${((req.oidc.user.nickname))}`)
+    //res.setHeader("Location",`http://localhost:3000/${((req.oidc.user.nickname))}`)
+    //res.setHeader("Data",req.oidc.user)
+    //res.end();
+    app.locals.profileInformation = req.oidc.user;
+    global.userInformation = req.oidc.user;
+   });
+
+   app.get('/dataCallback', (req, res) => {
+    res.send(userInformation)
+    console.log(`sending ${req.oidc.user} to the frontend`)
    });
 //////////////////////////////////////////////////////////////////////// QUARENTINE
 // // app.use(function (req, res, next) {
