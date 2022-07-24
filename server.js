@@ -140,16 +140,6 @@ app.use(auth(config));
 
 //////////////////////////////////////////////////////////////
 
-app.get('/test', async (req, res) => {
-    let { token_type, access_token } = req.oidc.accessToken;
-    const products = await request.get('http://localhost:8080/signin', {
-      headers: {
-        Authorization: `${token_type} ${access_token}`,
-      },
-    });
-    res.send(`Products: ${products}`);
-  });
-
     app.get('/logout',requiresAuth(), (req, res) => {
         console.log("logout initialized")
         req.oidc.logout({
@@ -229,30 +219,28 @@ app.get('/profile', requiresAuth(), (req, res, next ) => {
 
 
      //res.send(`hello ${(JWT)} ${(JSON.stringify(req.oidc.user))}`)
-     res.send(req.oidc.user);
+     res.send(profileInformation);
 
 //     res.send(req.oidc.isAuthenticated() ? ` hi ${(JSON.stringify(req.oidc.user))}` : "ur gay");
 //     //res.send(`hi: ${req.oidc.user}`);
    });
 
-   app.get('/profileFetch', (req, res, next) => {
+   app.get('/profileFetch', requiresAuth(), (req, res, next) => {
     // exports.route = function(req, res){
     //     var profileInformation = req.app.locals.profileInformation;
-    //     console.log(profileInformation);
-    //     console.log("benis");
+    //    console.log("benis");
     // }
+    //res.oidc.login({returnTo: `http://localhost:3000/profile/${((req.oidc.user.nickname))}` })
     res.redirect(`http://localhost:3000/profile/${((req.oidc.user.nickname))}`)
     //res.setHeader("Location",`http://localhost:3000/${((req.oidc.user.nickname))}`)
     //res.setHeader("Data",req.oidc.user)
     //res.end();
-    app.locals.profileInformation = req.oidc.user;
-    global.userInformation = req.oidc.user;
+
    });
 
-   app.get('/dataCallback', (req, res) => {
-    res.send(userInformation)
-    console.log(`sending ${req.oidc.user} to the frontend`)
-   });
+//    app.get('/dataCallback', requiresAuth(), (req, res, next) => {
+//         res.send(req.oidc.user)
+//    });
 //////////////////////////////////////////////////////////////////////// QUARENTINE
 // // app.use(function (req, res, next) {
 // //     res.locals.user = req.oidc.user;
